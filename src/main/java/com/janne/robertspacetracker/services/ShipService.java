@@ -39,7 +39,7 @@ public class ShipService {
             .block(); // Blocking call to keep it simple and match the Python version
     }
 
-    public List<ShipSkus> getShipSkusses() {
+    public List<ShipSkus> getShipSkus() {
         String authToken = getAuthToken();
         String graphqlQuery = """
                 query filterShips($fromId: Int, $toId: Int, $fromFilters: [FilterConstraintValues], $toFilters: [FilterConstraintValues]) {

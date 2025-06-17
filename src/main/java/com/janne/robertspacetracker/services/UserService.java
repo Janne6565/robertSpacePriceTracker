@@ -32,7 +32,7 @@ public class UserService {
             return;
         }
         String jwt = jwtService.generateToken(Map.of("email", email));
-        String link = frontendBaseUrl + "/login/" + jwt;
+        String link = frontendBaseUrl + "/configure?jwt=" + jwt;
         mailService.sendMail("login@roberSpaceTracker.org", email, "Hi, please click this link to log into the Robert Space Tracker " + link, "Robert space Ship tracker login");
     }
 

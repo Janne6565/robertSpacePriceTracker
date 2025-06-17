@@ -14,13 +14,14 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class UserController {
 
     private final UserService userService;
     private final JwtService jwtService;
 
     @GetMapping("/user")
-    public ResponseEntity<String> getUser(@CookieValue("accessToken") String accessToken) {
+    public ResponseEntity<UserEntity> getUser(@RequestParam("accessToken") String accessToken) {
         try {
             if (accessToken == null) {
                 throw new RuntimeException();
@@ -29,24 +30,17 @@ public class UserController {
             if (user == null) {
                 throw new RuntimeException();
             }
-            return ResponseEntity.ok(user);
+            return ResponseEntity.ok(userService.getUserEntity(user));
         } catch (Exception ignored) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
 
-    @PostMapping("/cookie")
-    public ResponseEntity<String> setCookie(@RequestParam("jwt") String jwt) {
-        ResponseCookie responseCookie = ResponseCookie.from("accessToken", jwt)
-            .httpOnly(false)
-            .secure(false)
-            .path("/")
-            .maxAge(jwtService.getJwtValidityDuration() / 1000)
-            .build();
+    @GetMapping("/cookie")
+    public ResponseEntity<String> setCookie(@RequestParam("accessToken") String jwt) {
+        ResponseCookie responseCookie = ResponseCookie.from("accessToken", jwt).httpOnly(false).secure(false).path("/").maxAge(jwtService.getJwtValidityDuration() / 1000).build();
 
-        return ResponseEntity.status(HttpStatus.OK)
-            .header(HttpHeaders.SET_COOKIE, responseCookie.toString())
-            .body("Success");
+        return ResponseEntity.status(HttpStatus.OK).header(HttpHeaders.SET_COOKIE, responseCookie.toString()).body("Success");
     }
 
     @PostMapping("/login/{email}")
@@ -54,7 +48,6 @@ public class UserController {
         userService.sendLoginRequest(email);
         return ResponseEntity.ok("Mail send");
     }
-
 
     @PostMapping("/user/{email}")
     public ResponseEntity<UserEntity> createUser(@PathVariable("email") String email) {
@@ -67,7 +60,7 @@ public class UserController {
     }
 
     @PatchMapping("/user/config")
-    public ResponseEntity<UserEntity> updateUser(@RequestBody UserEntity userEntity, @CookieValue("accessToken") String accessToken) {
+    public ResponseEntity<UserEntity> updateUser(@RequestBody UserEntity userEntity, @RequestParam("accessToken") String accessToken) {
         if (accessToken == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -81,7 +74,7 @@ public class UserController {
     }
 
     @DeleteMapping("/user")
-    public ResponseEntity<UserEntity> deleteUser(@CookieValue("accessToken") String accessToken) {
+    public ResponseEntity<UserEntity> deleteUser(@RequestParam("accessToken") String accessToken) {
         String authorizedEmail = jwtService.getJwtOwner(accessToken);
         if (authorizedEmail == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -92,9 +85,4 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserEntity(authorizedEmail));
     }
 
-    @DeleteMapping("/user/{email}")
-    public ResponseEntity<Void> deleteUserByEmail(@PathVariable("email") String email) {
-        userService.deleteUser(email);
-        return ResponseEntity.ok(null);
-    }
 }

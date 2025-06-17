@@ -19,6 +19,7 @@ public class CheckService {
     private final UserService userService;
     private final ShipService shipService;
     private final MailService mailService;
+    private final MessageService messageService;
 
     private boolean isCurrentlyOnDiscount(Ship ship, Sku[] shipSkus) {
         return shipSkus.length > 1;
@@ -27,16 +28,16 @@ public class CheckService {
     @Scheduled(fixedRate = 1, timeUnit = TimeUnit.HOURS)
     public void checkUsers() {
         List<Ship> ships = shipService.getShips();
-        List<ShipSkus> skusses = shipService.getShipSkusses();
+        List<ShipSkus> skus = shipService.getShipSkus();
 
         ships.forEach(ship -> {
-            List<ShipSkus> shipSkusses = skusses.stream().filter(skus -> skus.id() == ship.id()).toList();
-            if (shipSkusses.isEmpty()) {
+            List<ShipSkus> shipSkus = skus.stream().filter(sku -> sku.id() == ship.id()).toList();
+            if (shipSkus.isEmpty()) {
                 return;
             }
-            if (isCurrentlyOnDiscount(ship, shipSkusses.getFirst().skus())) {
+            if (isCurrentlyOnDiscount(ship, shipSkus.getFirst().skus())) {
                 int originalPrize = ship.msrp();
-                int reducedPrize = Arrays.stream(shipSkusses.getFirst().skus()).mapToInt(Sku::price).min().orElse(originalPrize);
+                int reducedPrize = Arrays.stream(shipSkus.getFirst().skus()).mapToInt(Sku::price).min().orElse(originalPrize);
                 log.info("Ship is on discount: {} (Original Prize: {}) discounted prize: {}", ship.name(), originalPrize, reducedPrize);
                 userService.getAllUsers().stream().forEach(u -> {
                     if (u.getMinAmount() != null && u.getMinAmount() > reducedPrize) {
@@ -45,7 +46,7 @@ public class CheckService {
                     if (u.getMaxAmount() != null && u.getMaxAmount() < originalPrize) {
                         return;
                     }
-                    String message = String.format("Ship on discount which fits your search configurations <br>The %s is reduced from %d€ to %d€", ship.name(), originalPrize / 100, reducedPrize / 100);
+                    String message = messageService.buildNotificationMessage(u.getEmail(), ship, originalPrize, reducedPrize);
                     String mailResponse = mailService.sendMail("alert@robertspacetracker.org", u.getEmail(), message, "Ship discount detected");
                     log.info("Sending mail ({}) to {} {}", mailResponse, u.getEmail(), message);
                 });
