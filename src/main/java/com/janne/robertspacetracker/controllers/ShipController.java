@@ -29,5 +29,4 @@ public class ShipController {
         return ResponseEntity.ok(shipService.getShipSkusses().toArray(new ShipSkus[0]));
     }
 
-
 }
