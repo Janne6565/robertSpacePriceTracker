@@ -1,4 +1,7 @@
 package com.janne.robertspacetracker.model;
 
-public record ShipSkus() {
+public record ShipSkus(
+    int id,
+    Sku[] skus
+) {
 }
