@@ -33,11 +33,6 @@ public class MailService {
             throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Too many requests, you've run into a rate limit");
         }
 
-        log.info("Sending mail hihi");
-        if (true) {
-            return "";
-        }
-
         MultiValueMap<String, Object> formData = new LinkedMultiValueMap<>();
         formData.add("from", author);
         formData.add("to", receiver);
