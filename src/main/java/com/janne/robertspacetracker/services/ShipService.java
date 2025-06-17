@@ -9,12 +9,14 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -22,6 +24,10 @@ public class ShipService {
 
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
+    @Getter
+    private List<Ship> ships;
+    @Getter
+    private List<ShipSkus> shipSkus;
 
     public ShipService(WebClient.Builder webClientBuilder, ObjectMapper objectMapper) {
         this.webClient = webClientBuilder
@@ -39,7 +45,14 @@ public class ShipService {
             .block(); // Blocking call to keep it simple and match the Python version
     }
 
-    public List<ShipSkus> getShipSkus() {
+
+    @Scheduled(fixedRate = 1, timeUnit = TimeUnit.HOURS)
+    public void fetchStuff() {
+        this.shipSkus = fetchSkus();
+        this.ships = fetchShips();
+    }
+
+    public List<ShipSkus> fetchSkus() {
         String authToken = getAuthToken();
         String graphqlQuery = """
                 query filterShips($fromId: Int, $toId: Int, $fromFilters: [FilterConstraintValues], $toFilters: [FilterConstraintValues]) {
@@ -105,7 +118,7 @@ public class ShipService {
         }
     }
 
-    public List<Ship> getShips() {
+    public List<Ship> fetchShips() {
         String authToken = getAuthToken();
         String graphqlQuery = """
                 query initShipUpgrade {

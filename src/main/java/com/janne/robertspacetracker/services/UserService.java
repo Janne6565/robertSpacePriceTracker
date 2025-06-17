@@ -1,6 +1,7 @@
 package com.janne.robertspacetracker.services;
 
 import com.janne.robertspacetracker.entities.UserEntity;
+import com.janne.robertspacetracker.model.Ship;
 import com.janne.robertspacetracker.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,11 +30,13 @@ public class UserService {
 
     public void sendLoginRequest(String email) {
         if (!userRepository.existsById(email)) {
+            log.info("User not found with email {}", email);
             return;
         }
         String jwt = jwtService.generateToken(Map.of("email", email));
         String link = frontendBaseUrl + "/configure?jwt=" + jwt;
-        mailService.sendMail("login@roberSpaceTracker.org", email, "Hi, please click this link to log into the Robert Space Tracker " + link, "Robert space Ship tracker login");
+        String response = mailService.sendMail("notify@syncup.cloud", email, "Hi, please click this link to log into the Robert Space Tracker " + link, "Robert space Ship tracker login");
+        log.info("Mail send to {} ({}) jwt: {} link: {}", email, response, jwt, link);
     }
 
     public void updateUserConfig(UserEntity userEntity) {

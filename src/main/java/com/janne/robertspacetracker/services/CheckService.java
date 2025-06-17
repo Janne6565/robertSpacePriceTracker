@@ -47,7 +47,7 @@ public class CheckService {
                         return;
                     }
                     String message = messageService.buildNotificationMessage(u.getEmail(), ship, originalPrize, reducedPrize);
-                    String mailResponse = mailService.sendMail("alert@robertspacetracker.org", u.getEmail(), message, "Ship discount detected");
+                    String mailResponse = mailService.sendMail("alert@syncup.cloud", u.getEmail(), message, "Ship discount detected");
                     log.info("Sending mail ({}) to {} {}", mailResponse, u.getEmail(), message);
                 });
             }

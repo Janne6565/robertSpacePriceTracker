@@ -3,6 +3,7 @@ package com.janne.robertspacetracker.controllers;
 import com.janne.robertspacetracker.entities.UserEntity;
 import com.janne.robertspacetracker.services.JwtService;
 import com.janne.robertspacetracker.services.UserService;
+import io.github.bucket4j.Bucket;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -52,11 +53,6 @@ public class UserController {
     @PostMapping("/user/{email}")
     public ResponseEntity<UserEntity> createUser(@PathVariable("email") String email) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUserEntity(email));
-    }
-
-    @GetMapping("/users")
-    public ResponseEntity<List<UserEntity>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
     }
 
     @PatchMapping("/user/config")
